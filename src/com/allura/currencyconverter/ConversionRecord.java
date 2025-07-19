@@ -2,29 +2,49 @@ package com.allura.currencyconverter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.text.NumberFormat; // ///////////// NUEVA LÍNEA /////////////
+import java.util.Locale;      // ///////////// NUEVA LÍNEA /////////////
 
-// Se definió ConversionRecord como una clase «Record».
-public record ConversionRecord(
-        String baseCurrency,
-        String targetCurrency,
-        double amount,
-        double convertedAmount,
-        double rate,
-        LocalDateTime timestamp
-) {
+public class ConversionRecord {
+    private final String baseCurrency;
+    private final String targetCurrency;
+    private final double originalAmount;
+    private final double convertedAmount;
+    private final double conversionRate;
+    private final LocalDateTime timestamp;
 
-    // Llama al constructor canónico (generado por el record) y le pasa el LocalDateTime.now().
-    public ConversionRecord(String baseCurrency, String targetCurrency, double amount, double convertedAmount, double rate) {
-        this(baseCurrency, targetCurrency, amount, convertedAmount, rate, LocalDateTime.now());
+    public ConversionRecord(String baseCurrency, String targetCurrency, double originalAmount, double convertedAmount, double conversionRate) {
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
+        this.originalAmount = originalAmount;
+        this.convertedAmount = convertedAmount;
+        this.conversionRate = conversionRate;
+        this.timestamp = LocalDateTime.now();
     }
 
-    // Sobreescribe toString() para un formato más legible para el historial.
     @Override
     public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedTimestamp = timestamp.format(formatter);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        return String.format("[%s] %.2f %s equivale a %.2f %s (Tasa: %.4f)",
-                formattedTimestamp, amount, baseCurrency, convertedAmount, targetCurrency, rate);
+        // Creación de un formateador de números para el Locale de EE.UU. (coma para miles, punto para decimales).
+        NumberFormat amountFormatter = NumberFormat.getNumberInstance(Locale.US);
+        amountFormatter.setMinimumFractionDigits(2); // Mínimo 2 decimales.
+        amountFormatter.setMaximumFractionDigits(2); // Máximo 2 decimales (para cantidades de moneda).
+
+        // Creación de formateador para la tasa de conversión (más decimales para precisión).
+        NumberFormat rateFormatter = NumberFormat.getNumberInstance(Locale.US);
+        rateFormatter.setMinimumFractionDigits(4); // Mínimo 4 decimales.
+        rateFormatter.setMaximumFractionDigits(6); // Máximo 6 decimales (o más si necesitas mayor precisión).
+
+        return String.format(
+                "Fecha/Hora: %s\n" +
+                        "De: %s %s\n" +
+                        "A: %s %s\n" +
+                        "Tasa de Conversión: %s",
+                timestamp.format(dateTimeFormatter),
+                amountFormatter.format(originalAmount), baseCurrency, //Aplicación del formateador
+                amountFormatter.format(convertedAmount), targetCurrency, //Aplicación del formateador
+                rateFormatter.format(conversionRate) //Aplicación del formateador
+        );
     }
 }

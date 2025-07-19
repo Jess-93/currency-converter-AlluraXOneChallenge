@@ -15,14 +15,21 @@ import java.util.Scanner; // Entrada de usuario.
 
 public class CurrencyConverterApp {
 
-    // ¡IMPORTANTE! Reemplazar "TU_API_KEY_AQUI" con tu clave API real de ExchangeRate-API.
+    // ¡IMPORTANTE! Reemplazar "TU_API_KEY_AQUÍ" con tu clave API real de ExchangeRate-API.
     private static final String API_KEY = "00c208eba71f0154736d4c03";
     private static final String API_BASE_URL = "https://v6.exchangerate-api.com/v6/";
 
+    private static String lastBaseCurrency = null;
+    private static String lastTargetCurrency = null;
+    private static double lastConvertedAmount = 0.0;
+    private static boolean lastConversionSuccessful = false;
+
+
+
     // Lista y nombre de salida para generar archivo de texto que contendrá el historial de conversión.
-    /** ***** Lista para almacenar objetos ConversionRecord ***** */
+    /** ***** Lista para almacenar objetos ConversionRecord ***** **/
     private static final List<ConversionRecord> conversionHistory = new ArrayList<>();
-    /** ***** Nombre del archivo para guardar el historial ***** */
+    /** ***** Nombre del archivo para guardar el historial ***** **/
 
 
 
@@ -35,28 +42,58 @@ public class CurrencyConverterApp {
 
         while (true) {
             System.out.println("\nSeleccione una opción:");
-            System.out.println("1. Convertir moneda (ingresar manualmente)");
+            System.out.println("1. Convertir moneda (ingresar el monto manualmente)");
             System.out.println("2. Ver opciones de monedas disponibles");
-            System.out.println("3. Salir");
+            System.out.println("La opción numero 3 se mostrará después de hacer una conversión. Por favor continúe.");
+            if (lastConversionSuccessful) {
+                System.out.println("3. Convertir Inversamente (la última conversión)");
+            }
+            System.out.println("4. Salir");
+
             System.out.print("Ingrese su opción: ");
 
             String option = scanner.nextLine();
 
+
             switch (option) {
                 case "1":
-                    System.out.print("Ingrese la moneda base (Su moneda que desea convertir a otra) (ej. USD, EUR, ARS): ");
-                    String baseCurrency = scanner.nextLine().toUpperCase(); // Convierte a mayúsculas.
-
-                    System.out.print("Ingrese la moneda de destino (ej. USD, EUR, ARS): ");
-                    String targetCurrency = scanner.nextLine().toUpperCase(); // Convierte a mayúsculas.
-
-                    System.out.print("Ingrese la cantidad a convertir: ");
+                    String baseCurrency;
+                    String targetCurrency;
                     double amount;
-                    try {
-                        amount = Double.parseDouble(scanner.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.err.println("Cantidad inválida. Por favor, ingrese un número válido.");
-                        continue; // Vuelve al inicio del bucle.
+
+                    while (true) {
+                        System.out.print("Ingrese la moneda base (ej. USD, EUR, ARS): ");
+                        baseCurrency = scanner.nextLine().toUpperCase();
+                        if (containsOnlyLetters(baseCurrency) && baseCurrency.length() == 3) {
+                            break; // Si es válido, sale del bucle de entrada.
+                        } else {
+                            System.err.println("Error: El código de la moneda base debe ser un texto de 3 letras (ej. USD). Intente de nuevo por favor.");
+                        }
+                    }
+
+                    while (true) {
+                        System.out.print("Ingrese la moneda de destino (ej. USD, EUR, ARS): ");
+                        targetCurrency = scanner.nextLine().toUpperCase();
+                        if (containsOnlyLetters(targetCurrency) && targetCurrency.length() == 3) {
+                            break; // Si es válido, sale del bucle de entrada.
+                        } else {
+                            System.err.println("Error: El código de la moneda de destino debe ser un texto de 3 letras (ej. EUR). Intente de nuevo por favor.");
+                        }
+                    }
+
+                    while (true) { // Este bucle asegura que se solicite la cantidad hasta que sea válida.
+                        System.out.print("Por favor ingrese la cantidad a convertir: ");
+                        try {
+                            amount = Double.parseDouble(scanner.nextLine());
+                            // Opcional: Añadir una validación para que la cantidad sea positiva
+                            // if (amount <= 0) {
+                            //     System.err.println("Error: La cantidad debe ser un número positivo. Intente de nuevo.");
+                            //     continue; // Vuelve a pedir la cantidad.
+                            // }
+                            break; // Si se ingresa un número válido, sale de este bucle interno.
+                        } catch (NumberFormatException e) {
+                            System.err.println("Cantidad inválida. Por favor, ingrese un número válido e intente de nuevo.");
+                        }
                     }
 
                     performConversion(baseCurrency, targetCurrency, amount);
@@ -69,6 +106,16 @@ public class CurrencyConverterApp {
                     System.out.println("\n(Para una lista completa, consulte la documentación de ExchangeRate-API)");
                     break;
                 case "3":
+                    if (lastConversionSuccessful) {
+                        System.out.printf("\nRealizando conversión inversa: %.2f %s a %s\n",
+                                lastConvertedAmount, lastTargetCurrency, lastBaseCurrency);
+                        // Intercambia las monedas y usa la cantidad convertida como la nueva cantidad base
+                        performConversion(lastTargetCurrency, lastBaseCurrency, lastConvertedAmount);
+                    } else {
+                        System.out.println("No hay una conversión exitosa anterior para invertir.");
+                    }
+                    break;
+                case "4":
                     System.out.println("Gracias por usar el conversor. ¡Hasta luego!");
                     HistoryManager historyManager = new HistoryManager();
                     historyManager.saveHistory(conversionHistory);
@@ -78,6 +125,14 @@ public class CurrencyConverterApp {
                     System.out.println("Opción no válida. Por favor, intente de nuevo.");
             }
         }
+    }
+
+    private static boolean containsOnlyLetters(String text) { // NOTA: Parámetro es «Text», más genérico.
+        if (text == null || text.isEmpty()) {
+            return false; // Si es nulo o vacío, no contiene solo letras.
+        }
+        // Verifica si toda la cadena coincide con un patrón de solo letras
+        return text.matches("[a-zA-Z]+");
     }
 
     // Metodo para realizar la conversión.
@@ -115,16 +170,20 @@ public class CurrencyConverterApp {
                             );
 
                             System.out.print("\n--- Resultado de Conversión ---\n");
-                            //System.out.printf("%.2f %s equivale a %.2f %s (Tasa: %.4f)%n",
-                                    //amount, baseCurrency, convertedAmount, targetCurrency, rate);
                             System.out.println(record.toString());
                             System.out.println("------------------------------");
 
                             // Añade el objeto ConversionRecord a la lista del historial.
                             conversionHistory.add(record);
 
+                            lastBaseCurrency = baseCurrency; // Línea para la conversión inversa.
+                            lastTargetCurrency = targetCurrency; // Línea para la conversión inversa.
+                            lastConvertedAmount = convertedAmount; // Línea para la conversión inversa.
+                            lastConversionSuccessful = true; // Línea para la conversión inversa.
+
                         } else {
                             System.err.println("Error: No se encontró la tasa de cambio para '" + targetCurrency + "'. Verifique el código de la moneda.");
+                            lastConversionSuccessful = false;
                         }
                     } else {
                         // Manejo de errores de la API (ej. clave API inválida, moneda no encontrada, etc.)
@@ -136,17 +195,20 @@ public class CurrencyConverterApp {
                             System.err.println("Verifique que su API_KEY sea correcta y esté activa.");
                         } else if ("malformed-request".equals(errorType) || "invalid-url".equals(errorType)) {
                             System.err.println("La URL de la solicitud está mal formada. Revise la construcción de la URL.");
+                            lastConversionSuccessful = false;
                         }
                     }
 
                 } catch (JsonSyntaxException e) {
                     System.err.println("Error al parsear el JSON de la API. La respuesta no es un JSON válido.");
                     System.err.println("Detalle: " + e.getMessage());
+                    lastConversionSuccessful = false;
                 }
 
             } else {
                 System.err.println("Error HTTP: " + response.statusCode() + " - No se pudo obtener una respuesta exitosa de la API.");
                 System.err.println("Cuerpo de la respuesta: " + response.body());
+                lastConversionSuccessful = false;
             }
 
         } catch (IOException | InterruptedException e) {
@@ -154,6 +216,7 @@ public class CurrencyConverterApp {
             System.err.println("Detalle: " + e.getMessage());
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt(); // Restaurar el estado de interrupción.
+                lastConversionSuccessful = false;
             }
         }
     }
