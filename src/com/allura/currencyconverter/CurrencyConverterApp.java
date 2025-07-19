@@ -15,7 +15,7 @@ import java.util.Scanner; // Entrada de usuario.
 
 public class CurrencyConverterApp {
 
-    // ¡IMPORTANTE! Reemplazar "TU_API_KEY_AQUÍ" con tu clave API real de ExchangeRate-API.
+    // ¡IMPORTANTE! REEMPLAZA "TU_API_KEY_AQUÍ" con tu clave API real de ExchangeRate-API.
     private static final String API_KEY = "TU_API_KEY_AQUÍ";
     private static final String API_BASE_URL = "https://v6.exchangerate-api.com/v6/";
 
