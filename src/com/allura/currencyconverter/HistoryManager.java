@@ -27,14 +27,14 @@ public class HistoryManager {
         try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))) {
             writer.println("--- Historial de Conversión del " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " ---");
 
-            // Se recorre la lista de registros de conversión
+            // Se recorre la lista de registros de conversión.
             for (ConversionRecord record : history) {
-                writer.println(record.toString()); // Se escribe cada registro en una nueva línea
+                writer.println(record.toString()); // Se escribe cada registro en una nueva línea.
             }
 
             writer.println("--- Fin del Historial ---"); // Pie del archivo.
 
-            // Se imprime en consola dónde se guardó el historial
+            // Se imprime en consola dónde se guardó el historial.
             System.out.println("\nHistorial de conversiones guardado en: " + fileName);
         } catch (IOException e) {
             // Manejo de errores si hay problemas al escribir el archivo
