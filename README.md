@@ -57,7 +57,7 @@ La aplicación ofrece las siguientes funcionalidades clave para una experiencia 
     Puedes ver una demostración en video del conversor de monedas aquí:
     <br><br>
     <a href="https://vimeo.com/1102717817?share=copy" target="_blank">
-        <img src="assets/thumb.jpg" alt="Miniatura de la Demostración" width="400">
+        <img src="assets/miniatura" alt="Miniatura de la Demostración" width="400">
     </a>
     <br>
     <em>Haz clic en la imagen para ver la demostración completa de la aplicación en video (se abrirá en una nueva pestaña).</em>
