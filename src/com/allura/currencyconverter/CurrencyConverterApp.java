@@ -19,10 +19,10 @@ public class CurrencyConverterApp {
     private static final String API_KEY = "TU_API_KEY_AQUÍ";
     private static final String API_BASE_URL = "https://v6.exchangerate-api.com/v6/";
 
-    private static String lastBaseCurrency = null;
-    private static String lastTargetCurrency = null;
-    private static double lastConvertedAmount = 0.0;
-    private static boolean lastConversionSuccessful = false;
+    private static String lastBaseCurrency = null; //Variable de salida
+    private static String lastTargetCurrency = null; //Variable de salida
+    private static double lastConvertedAmount = 0.0; //Variable de salida
+    private static boolean lastConversionSuccessful = false; //Variable de salida
 
 
 

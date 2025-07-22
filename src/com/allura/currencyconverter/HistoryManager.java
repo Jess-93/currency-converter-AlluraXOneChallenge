@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+// Clase para crear un historial de cada consulta, así como crear el nombre de forma automatizada.
+
 public class HistoryManager {
 
     public void saveHistory(List<ConversionRecord> history) {

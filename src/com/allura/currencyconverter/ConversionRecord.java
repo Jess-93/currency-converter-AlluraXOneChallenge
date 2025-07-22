@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 import java.text.NumberFormat; // ///////////// NUEVA LÍNEA /////////////
 import java.util.Locale;      // ///////////// NUEVA LÍNEA /////////////
 
+// Clase para guardar un «Historial» en formato txt de todas las consulta en una sesión.
+
 public class ConversionRecord {
     private final String baseCurrency;
     private final String targetCurrency;
